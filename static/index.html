@@ -39,7 +39,9 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
             try {
                 if (xhr.status==200) {
                     //XXX: parse some JSON from the request!
+                    var world = JSON.parse(xhr.responseText)
                     //XXX: Pass the data to the callback!
+                    callback(world)
                 }
             } 
             catch(e) {
@@ -72,7 +74,8 @@ function drawCircle(context,entity) {
 
 function prepEntity(entity) {
     if (!entity["colour"]) {
-        entity["colour"] = "#FF0000";
+        // entity["colour"] = "#FF0000";
+        entity["colour"] = "#10ad76";
     }
     if (!entity["radius"]) {
         entity["radius"] = 50;
@@ -136,8 +139,24 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    drawNextFrame(); // (but should we?)
+    // drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just  modified!
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            try {
+                if (xhr.status == 200) {
+                    world[entity] = JSON.parse(xhr.responseText);
+                }
+            }
+            catch(e) {
+                alert('Error: ' + e.name);
+            }
+        }
+    }
+    xhr.open('POST', "http://127.0.0.1:5000/entity" + entity, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(data));
 
 }
 
@@ -263,6 +282,24 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
     drawFrame();
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            try {
+                if (xhr.status == 200) {
+                    var world = JSON.parse(xhr.responseText);
+                    // callback(world);
+                }
+            }
+            catch(e) {
+                alert('Error: ' + e.name);
+            }
+        }
+    }
+    xhr.open('GET', "http://127.0.0.1:5000/world", true);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+    drawNextFrame();
 }
 
 // 30 frames per second

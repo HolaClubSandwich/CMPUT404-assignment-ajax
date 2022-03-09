@@ -89,7 +89,7 @@ def update(entity):
         for key in keys:
             myWorld.update(entity, key, data[key])
 
-    return flask.jsonify(myWorld.ger(entity))
+    return flask.jsonify(myWorld.get(entity))
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
